@@ -153,7 +153,6 @@ def test_custom_scalar():
 
     @given(query=gql_st.query(schema))
     def test(query):
-        pass
+        assert "created" in query
 
-    with pytest.raises(TypeError, match="Custom scalar types are not supported"):
-        test()
+    test()

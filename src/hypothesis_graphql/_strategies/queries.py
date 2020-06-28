@@ -66,12 +66,15 @@ def fields_for_type(field: graphql.GraphQLField) -> st.SearchStrategy[Optional[L
 
 def list_of_arguments(**kwargs: graphql.GraphQLArgument) -> st.SearchStrategy[List[graphql.ArgumentNode]]:
     """Generate a list `graphql.ArgumentNode` for a field."""
-    return st.tuples(
-        *(
-            st.builds(partial(graphql.ArgumentNode, name=graphql.NameNode(value=name)), value=argument_values(argument))  # type: ignore
-            for name, argument in kwargs.items()
-        )
-    ).map(finalize_arguments)
+    args = []
+    for name, argument in kwargs.items():
+        try:
+            args.append(
+                st.builds(partial(graphql.ArgumentNode, name=graphql.NameNode(value=name)), value=argument_values(argument))  # type: ignore
+            )
+        except TypeError:
+            continue
+    return st.tuples(*args).map(finalize_arguments)
 
 
 def finalize_arguments(nodes: Tuple[graphql.ArgumentNode, ...]) -> List[graphql.ArgumentNode]:
